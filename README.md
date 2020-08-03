@@ -1,8 +1,8 @@
 # COVID-19_Nicaragua
 
 ## Data
-- `Confirmed cases`: Accumulated, confirmed cases of COVID-19 in Nicaragua at state level on a daily basis. The data is captured since March 17th, 2020 by [Observatorio Ciudadano COVID-19 Nicaragua](https://observatorioni.org/) and extracted by [@alvarole] (https://github.com/alvarole/shinden/blob/master/covid19/data/observatorioNic_confirmados.csv).
-- `Deceased cases`: Accumulated, deceased cases of COVID-19 in Nicaragua at state level on a daily basis. The data is captured since March 17th, 2020 by [Observatorio Ciudadano COVID-19 Nicaragua](https://observatorioni.org/) and extracted by [@alvarole] (https://github.com/alvarole/shinden/blob/master/covid19/data/observatorioNic_fallecidos.csv).
+- `Confirmed cases`: Accumulated, confirmed cases of COVID-19 in Nicaragua at state level on a daily basis. The data is captured since March 17th, 2020 by [Observatorio Ciudadano COVID-19 Nicaragua](https://observatorioni.org/) and extracted by [@alvarole](https://github.com/alvarole/shinden/blob/master/covid19/data/observatorioNic_confirmados.csv).
+- `Deceased cases`: Accumulated, deceased cases of COVID-19 in Nicaragua at state level on a daily basis. The data is captured since March 17th, 2020 by [Observatorio Ciudadano COVID-19 Nicaragua](https://observatorioni.org/) and extracted by [@alvarole](https://github.com/alvarole/shinden/blob/master/covid19/data/observatorioNic_fallecidos.csv).
 
 ### 1. Heatmap: Accumulated deceased cases - selected states
 ![Heatmap](https://github.com/quinrod/COVID-19_Nicaragua/blob/master/mapa%20de%20calor.png)
