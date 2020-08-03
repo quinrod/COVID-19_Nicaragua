@@ -66,9 +66,11 @@ series_df <- do.call(rbind, series_data_)
 
 # Process data and subset on countries
 # sort(unique(series_df$dep))
-selected_dep <- c('No información', 'Total')
-                  
-## 'Carazo', 'RACCN', 'RACCS', 'Río San Juan ', 'Nueva Segovia', 'Boaco', 'Madriz', 'Rivas','Jinotega', 'Chontales', 'Granada')
+selected_dep <- c('No información', 'Total',
+                  'Carazo', 'RACCN', 'RACCS', 
+                  'Río San Juan ', 'Nueva Segovia', 
+                  'Boaco', 'Madriz', 'Rivas',
+                  'Jinotega', 'Chontales', 'Granada')
 
 ## sum group by country by status (all columns)
 date_col_idx <- which(grepl('X', colnames(series_df)))
