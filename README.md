@@ -14,7 +14,7 @@
 ![By States](https://github.com/quinrod/COVID-19_Nicaragua/blob/master/por%20municipio.png)
 
 ### Dynamic Longitudinal Chart: accumulated confirmed and deceased cases - selected states
-![Dinamico](https://github.com/quinrod/COVID-19_Nicaragua/blob/master/dinamico.html)
+![Dinamico](https://github.com/quinrod/COVID-19_Nicaragua/blob/master/dinamo.png)
 
 ### Animated Bar Charts: Racing accumulated confirmed cases - top 10 states
 ![Racing](https://github.com/quinrod/COVID-19_Nicaragua/blob/master/covid19.gif)
