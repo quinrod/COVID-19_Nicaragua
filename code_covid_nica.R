@@ -169,6 +169,8 @@ build
 # b.2. Static
 filter <- c('confirmados')
 
+
+
 static <- current_dat %>% 
   mutate(Date = as.character(as.Date(Date,"%d_%m_%Y")),
          State = as.character(State),
