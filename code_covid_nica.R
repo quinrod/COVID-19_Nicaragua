@@ -9,12 +9,12 @@ library(plotly)
 library(gridExtra)
 library(ggpubr)
 
-rdata <- '/Users/quinrod/projects/R/COVID-19/rdata/Nicaragua/'
+rdata<- '/Users/quinrod/projects/GitHub/COVID-19_Nicaragua/rdata/Nicaragua/'
 
 # 1. extract data
-covid_nica_confirmados <- getURL("https://raw.githubusercontent.com/alvarole/shinden/master/covid19/data/observatorioNic_confirmados.csv")
+covid_nica_confirmados <- getURL ("https://raw.githubusercontent.com/alvarole/shinden/master/covid19/data/observatorioNic_confirmados.csv")
 covid_nica_confirmados <- read.csv(text = covid_nica_confirmados) %>%
-  write.csv(.,paste(rdata,'covid_nica_confirmados.csv'), row.names = FALSE)
+write.csv(.,paste(rdata,'covid_nica_confirmados.csv'), row.names = FALSE)
 
 covid_nica_fallecidos <- getURL("https://raw.githubusercontent.com/alvarole/shinden/master/covid19/data/observatorioNic_fallecidos.csv")
 covid_nica_fallecidos <- read.csv(text = covid_nica_fallecidos) %>%
@@ -28,16 +28,16 @@ print(sprintf('Total data files = %s', length(series_data_files)))
 
 series_data_ <- lapply(series_data_files, 
                        function(i) {
-                         dat <- read.csv(paste0(rdata, '/', i), stringsAsFactors = FALSE)
+                         dat   <- read.csv(paste0(rdata, '/', i), stringsAsFactors = FALSE)
                          file_ <- gsub('.csv', '', i)
                          dat$Status <- strsplit(file_, '_')[[1]][3]
                          dat
                        })
 
-series_data_[[1]] <- cbind(X17.3.2020 = 0, series_data_[[1]]) 
-series_data_[[1]] <- series_data_[[1]] %>% select(, c(2,130,1,3,4:129))
-series_data_[[2]] <- cbind(X17.3.2020 = 0, X18.3.2020 = 0, X19.3.2020 = 0, X20.3.2020 = 0, X21.3.2020 = 0, series_data_[[2]])
-series_data_[[2]] <- series_data_[[2]] %>% select(, c(6,130,1,2,3,4,5,7:129))
+series_data_[[1]] <- cbind(series_data_[[1]][1],series_data_[[1]][ncol(series_data_[[1]])],X17.3.2020 = 0,series_data_[[1]][2:ncol(series_data_[[1]])])
+series_data_[[1]] <- series_data_[[1]][,-ncol(series_data_[[1]])]
+series_data_[[2]] <- cbind(series_data_[[2]][1],series_data_[[2]][ncol(series_data_[[2]])],X17.3.2020 = 0, X18.3.2020 = 0, X19.3.2020 = 0, X20.3.2020 = 0, X21.3.2020 = 0,series_data_[[2]][2:ncol(series_data_[[2]])]) 
+series_data_[[2]] <- series_data_[[2]][,-ncol(series_data_[[2]])]
 
 ### 2. Sanity check
 # check whether thecolumn names of 3 datasets match up 
@@ -86,7 +86,9 @@ dep_data <- series_df %>%
 colnames(dep_data)[3:ncol(dep_data)] = gsub('X', '', colnames(dep_data)[3:ncol(dep_data)]) %>%
   gsub('\\.', '_', .)
 
-#### 5. Generate graphs
+#### 5. Generate and save graphs
+
+figures<- '/Users/quinrod/projects/GitHub/COVID-19_Nicaragua/figures/'
 
 # a. Heatmap
 library(gplots)
@@ -110,8 +112,9 @@ heatmap_dat <- heatmap_dat %>%
 x <- as.matrix(heatmap_dat) 
 x <- x[order(x[,ncol(x)],decreasing=T),]
 
-
 dev.off()
+png(paste(figures, "heatmap.png"), width = 16, height = 12, units = 'in', res = 800)
+
 heatmap <- heatmap.2(x, trace = 'none', dendrogram = 'none',
                      density.info = 'none', keysize = 0.8,
                      key.title = NA, cexCol = 1, cexRow = 1,
@@ -119,6 +122,23 @@ heatmap <- heatmap.2(x, trace = 'none', dendrogram = 'none',
                      srtCol = 90, main = 'Casos de fallecidos por COVID-19', 
                      margins = c(8,8), 
                      xlab = 'Fuente: Observatorio Ciudadano COVID-19 Nicaragua')
+
+dev.off()
+
+theme(plot.title = element_text(hjust = 0.5, vjust = 0.5),
+      plot.subtitle = element_text(hjust = 3),
+      plot.caption = element_text(hjust = 3),
+      axis.text.x = element_text(angle = 90, hjust = 0.5, vjust = 0.5, size = 1), 
+      panel.spacing.y = unit(2, "mm"),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank())
+
+
+
+
+
+
+
 
 # b. Static & Dynamic Longitudinal Spaghetti Chart
 

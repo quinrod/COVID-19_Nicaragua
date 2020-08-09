@@ -9,7 +9,7 @@ library(plotly)
 library(gridExtra)
 library(ggpubr)
 
-rdata <- '/Users/quinrod/projects/R/COVID-19/rdata/Global/'
+rdata<- '/Users/quinrod/projects/GitHub/COVID-19_Nicaragua/rdata/Global/'
 
 # 1. extract data in R
 covid_global_confirmados <- getURL("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")
