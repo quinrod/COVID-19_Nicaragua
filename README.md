@@ -8,7 +8,7 @@
 ![Racing](https://github.com/quinrod/COVID-19_Nicaragua/blob/master/figures/covid19.gif)
 
 ### 2. Heatmap: Accumulated deceased cases - selected states
-![Heatmap](https://github.com/quinrod/COVID-19_Nicaragua/blob/master/figures/mapa%20de%20calor.png)
+![Heatmap](https://github.com/quinrod/COVID-19_Nicaragua/blob/master/figures/%20heatmap.png)
 
 ### 3. Static Longitudinal Chart: Trend of accumulated confirmed cases - all Nicaragua
 ![All Nicaragua](https://github.com/quinrod/COVID-19_Nicaragua/blob/master/figures/todos%20en%20una.png)
