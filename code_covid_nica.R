@@ -112,7 +112,7 @@ heatmap_dat <- heatmap_dat %>%
 x <- as.matrix(heatmap_dat) 
 x <- x[order(x[,ncol(x)],decreasing=T),]
 
-png(paste(figures, "heatmap.png"), width = 16, height = 12, units = 'in', res = 800)
+png(paste(figures,"heatmap.png"), width = 16, height = 12, units = 'in', res = 800)
 heatmap <- heatmap.2(x, trace = 'none', dendrogram = 'none',
                      density.info = 'none', keysize = 0.8,
                      key.title = NA, cexCol = 1, cexRow = 1,
@@ -144,11 +144,12 @@ current_dat <- do.call(rbind, current_dat_list)
 
 # b.1. Dynamic Longitudinal Spaghetti Chart
 #### Plotly with ggplot facet_wrap
-
+docs<- '/Users/quinrod/projects/GitHub/COVID-19_Nicaragua/docs/'
 selected_dep <- c('Chinandega', 'Managua', 'Masaya', 'Matagalpa', 'Jinotega','Granada',
                   'Total', 'Carazo', 'RACCN', 'RACCS','Río San Juan ', 'Nueva Segovia', 
                   'Boaco', 'Madriz', 'Rivas','Chontales')
-docs<- '/Users/quinrod/projects/GitHub/COVID-19_Nicaragua/docs/'
+
+
 x <- lapply(selected_dep, 
                 function(i) {
                     d <- current_dat %>% filter(State == i) 
@@ -237,11 +238,11 @@ static %>%
 library(gganimate)
 library(ggrepel)
 
-excluded_states <- c('No información', 'Total')
+selected_dep <- c('No información', 'Total')
 
 ##### INCLUDE ALL COUNTRIES and filter by top 10 rank 
 dep_data = series_df %>% 
-  filter(!(dep %in% excluded_states)) %>% 
+  filter(!(dep %in% selected_dep)) %>% 
   select(c(dep, Status, colnames(.)[date_col_idx])) %>%
   group_by(dep, Status) %>%
   summarise_each(funs(sum)) %>% 
@@ -249,10 +250,6 @@ dep_data = series_df %>%
 
 colnames(dep_data)[3:ncol(dep_data)] = gsub('X', '', colnames(dep_data)[3:ncol(dep_data)]) %>%
   gsub('\\.', '_', .)
-
-confirmados <- dep_data[dep_data$Status == 'confirmados', ] %>% 
-  melt(.) %>% 
-  set_colnames(c('State', 'Status', 'Date', 'Total')) 
 
 ### process Date shown in the annotation: 
 format_date = function(dat, date_var){
@@ -274,107 +271,121 @@ format_date = function(dat, date_var){
   return(sprintf('%s %s, 2020', day_n, mon_c))
 }
 
-confirmados$Date = format_date(dat = confirmados, date_var = 'Date')
-confirmados$Date = factor(confirmados$Date, levels = unique(confirmados$Date))
 
-levels(confirmados$Date)
+## Create loop for two datasets
+status <- c('confirmados','fallecidos')
+cases <- lapply(status, 
+            function(i) {
+              casos <- dep_data[dep_data$Status == i, ] %>% 
+                melt(.) %>% 
+                set_colnames(c('State', 'Status', 'Date', 'Total')) %>%
+                mutate(Date = format_date(dat = ., date_var = 'Date'),
+                       Date = factor(Date, levels = unique(Date)))
+              
+              ##  levels(casos$Date)  
+              ##  stopifnot(all(levels(casos_formatted$Date) == levels(casos$Date)))
+              
+              ##### set value_rel = Total/Total[floor(rank)==1] to avoid same multiple value as max, and there's no rank == 1
+              casos_formatted <- casos %>%
+                group_by(Date) %>%
+                mutate(Total_all = sum(Total),
+                       fixed_y = max(Total),
+                       rank = rank(-Total),
+                       value_lbl = paste0(" ", formatC(Total, big.mark = ','))) %>%
+                group_by(State) %>%
+                filter(rank <= 10) 
+              
+              #####======= static and animated plots
+              total_text_y = 0.70*(max(casos_formatted$Total))
+              panel_size_y = max(casos_formatted$Total) * 1  
+              vline_original_y = seq(floor(max(casos_formatted$Total)/8), 
+                                     max(casos_formatted$Total), by = floor(max(casos_formatted$Total)/8))
+              
+              country_font_size = 10
+              bar_end_num_size = 10
+              
+              staticplot <- ggplot(casos_formatted,
+                                   aes(rank, group = casos_formatted$State,
+                                       fill = as.factor(casos_formatted$State), color = as.factor(casos_formatted$State))) +
+                geom_tile(aes(y = Total/2, height = Total, width = 0.9), 
+                          alpha = 0.9, color = NA) +
+                geom_text(aes(y = 0, label = casos_formatted$State), vjust = 1.5, hjust = 0, 
+                          size = country_font_size, fontface = "bold", color = 'white') +
+                geom_text(aes(y = Total, label = value_lbl, vjust = 0.001, hjust = 0), fontface = 'bold', size = bar_end_num_size) +
+                
+                geom_text(aes(x = 8, y = total_text_y,
+                              label = sprintf('%s\n Total Nacional =%s', Date, format(Total_all, big.mark=",", scientific=FALSE))),
+                          size = 13, color = 'grey') +
+                
+                geom_hline(yintercept = vline_original_y, size = .08, color = "grey", linetype = 'dotted') +
+                scale_y_continuous(labels = scales::comma) +
+                scale_x_reverse() +
+                coord_flip(clip = "off", expand = FALSE) +
+                guides(color = FALSE, fill = FALSE) +
+                theme(axis.line = element_blank(),
+                      axis.text.y = element_blank(),
+                      axis.ticks = element_blank(),
+                      axis.title.x = element_blank(),
+                      axis.title.y = element_blank(),
+                      legend.position = "none",
+                      
+                      plot.background = element_rect(fill = "black"),
+                      panel.background = element_rect(fill = 'black'),
+                      
+                      panel.border=element_blank(),
+                      
+                      panel.grid.major = element_blank(),
+                      panel.grid.minor = element_blank(),
+                      
+                      plot.title = element_text(size=40, face="bold", colour='grey', vjust=1),  
+                      plot.subtitle = element_text(size=18, face="italic", color="grey"),   
+                      plot.caption = element_text(size=15, hjust=0.5, face="italic", color="grey"))
+              
+              #plot.margin = margin(2, 5, 2, 8, "cm"))
+              
+              #### Specify the transition length and ease_aes to give it a smoother transition 
+              current_state_len = 0 
+              current_transition_len = 12  
+              
+              anim <- staticplot + 
+                transition_states(Date, transition_length = current_transition_len, state_length = current_state_len) + 
+                ease_aes('cubic-in-out') +   
+                view_follow(fixed_x = TRUE, fixed_y = c(-10, NA))  + 
+                labs(title = paste('Casos' ,i, 'por día: {closest_state}'),
+                     subtitle = 'Top 10 Departamentos',
+                     caption = sprintf("Fuente: Observatorio Ciudadano COVID-19 Nicaragua\n Datos Extraídos at %s 23:59 (UTC)", 
+                                       as.character(casos_formatted$Date[dim(casos_formatted)[1]])))
+              
+              #####===== Save the output file 
+              library(gifski)
+              
+              output_type = 'GIF'
+              animate_speed = 16 
+              setwd(figures)
+              if(output_type == 'GIF'){  ### Save as GIF
+                save_name = paste(i,".gif")
+                animate(anim, 500, fps = animate_speed, 
+                        width = 1500, height = 1000, end_pause = 10, start_pause = 10, 
+                        renderer = gifski_renderer(save_name))  
+                
+                print(sprintf('==== GIF file %s saved ====', save_name))
+                
+              } else {              ### Save as MP4
+                save_name = paste(i,".mp4")
+                
+                animate(anim, 500, fps = animate_speed, 
+                        width = 1500, height = 1000, end_pause = 30, start_pause = 20,
+                        renderer = av_renderer(), 
+                        rewind = FALSE) -> save_as_mp4
+                
+                anim_save(save_name, animation = save_as_mp4)
+                
+                print(sprintf('==== MP4 file %s saved ====', save_name))
+              }  
+              
+            })
+              
+setwd("/Users/quinrod")
 
-##### set value_rel = Total/Total[floor(rank)==1] to avoid same multiple value as max, and there's no rank == 1
-confirmados_formatted = confirmados %>%
-  group_by(Date) %>%
-  mutate(Total_all = sum(Total),
-         fixed_y = max(Total),
-         rank = rank(-Total),
-         value_lbl = paste0(" ", formatC(Total, big.mark = ','))) %>%
-  group_by(State) %>%
-  filter(rank <= 10) 
 
-stopifnot(all(levels(confirmados_formatted$Date) == levels(confirmados$Date)))
 
-#####======= static and animated plots
-total_text_y = 0.70*(max(confirmados_formatted$Total))
-panel_size_y = max(confirmados_formatted$Total) * 1  
-vline_original_y = seq(floor(max(confirmados_formatted$Total)/8), 
-                       max(confirmados_formatted$Total), by = floor(max(confirmados_formatted$Total)/8))
-
-country_font_size = 10
-bar_end_num_size = 10
-
-staticplot <- ggplot(confirmados_formatted,
-                     aes(rank, group = confirmados_formatted$State,
-                        fill = as.factor(confirmados_formatted$State), color = as.factor(confirmados_formatted$State))) +
-  geom_tile(aes(y = Total/2, height = Total, width = 0.9), 
-            alpha = 0.9, color = NA) +
-  geom_text(aes(y = 0, label = confirmados_formatted$State), vjust = 1.5, hjust = 0, 
-            size = country_font_size, fontface = "bold", color = 'white') +
-  geom_text(aes(y = Total, label = value_lbl, vjust = 0.001, hjust = 0), fontface = 'bold', size = bar_end_num_size) +
-  
-  geom_text(aes(x = 8, y = total_text_y,
-                label = sprintf('%s\n Total Nacional =%s', Date, format(Total_all, big.mark=",", scientific=FALSE))),
-            size = 13, color = 'grey') +
-  
-  geom_hline(yintercept = vline_original_y, size = .08, color = "grey", linetype = 'dotted') +
-  scale_y_continuous(labels = scales::comma) +
-  scale_x_reverse() +
-  coord_flip(clip = "off", expand = FALSE) +
-  guides(color = FALSE, fill = FALSE) +
-  theme(axis.line = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank(),
-        axis.title.x = element_blank(),
-        axis.title.y = element_blank(),
-        legend.position = "none",
-        
-        plot.background = element_rect(fill = "black"),
-        panel.background = element_rect(fill = 'black'),
-        
-        panel.border=element_blank(),
-        
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        
-        plot.title = element_text(size=40, face="bold", colour='grey', vjust=1),  
-        plot.subtitle = element_text(size=18, face="italic", color="grey"),   
-        plot.caption = element_text(size=15, hjust=0.5, face="italic", color="grey"))
-
-#plot.margin = margin(2, 5, 2, 8, "cm"))
-
-#### Specify the transition length and ease_aes to give it a smoother transition 
-current_state_len = 0 
-current_transition_len = 12  
-
-anim <- staticplot + 
-  transition_states(Date, transition_length = current_transition_len, state_length = current_state_len) + 
-  ease_aes('cubic-in-out') +   
-  view_follow(fixed_x = TRUE, fixed_y = c(-10, NA))  + 
-  labs(title = 'Casos confirmados por día: {closest_state}',
-       subtitle = 'Top 10 Departamentos',
-       caption = sprintf("Fuente: Observatorio Ciudadano COVID-19 Nicaragua\n Datos Extraídos at %s 23:59 (UTC)", 
-                         as.character(confirmados_formatted$Date[dim(confirmados_formatted)[1]])))
-
-#####===== Save the output file 
-library(gifski)
-
-output_type = 'GIF'
-animate_speed = 16 
-
-if(output_type == 'GIF'){  ### Save as GIF
-  save_name = "/Users/quinrod/projects/R/COVID-19/covid19.gif"
-  animate(anim, 500, fps = animate_speed, 
-          width = 1500, height = 1000, end_pause = 10, start_pause = 10, 
-          renderer = gifski_renderer(save_name))  
-  
-  print(sprintf('==== GIF file %s saved ====', save_name))
-  
-} else {              ### Save as MP4
-  save_name = "/Users/quinrod/projects/R/COVID-19/covid19.mp4"
-  
-  animate(anim, 500, fps = animate_speed, 
-          width = 1500, height = 1000, end_pause = 30, start_pause = 20,
-          renderer = av_renderer(), 
-          rewind = FALSE) -> save_as_mp4
-  
-  anim_save(save_name, animation = save_as_mp4)
-  
-  print(sprintf('==== MP4 file %s saved ====', save_name))
-}  
