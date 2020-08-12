@@ -66,17 +66,11 @@ series_df <- do.call(rbind, series_data_)
 
 # Process data and subset on countries
 # sort(unique(series_df$dep))
-selected_dep <- c('No información', 'Total',
-                  'Carazo', 'RACCN', 'RACCS', 
-                  'Río San Juan ', 'Nueva Segovia', 
-                  'Boaco', 'Madriz', 'Rivas',
-                  'Jinotega', 'Chontales', 'Granada')
 
 ## sum group by country by status (all columns)
 date_col_idx <- which(grepl('X', colnames(series_df)))
 
 dep_data <- series_df %>%
-  filter(!(dep %in% selected_dep)) %>%
   select(c(dep, Status, colnames(.)[date_col_idx])) %>%
   group_by(dep, Status) %>%
   summarise_each(list(sum)) %>%
@@ -93,9 +87,15 @@ figures<- '/Users/quinrod/projects/GitHub/COVID-19_Nicaragua/figures/'
 # a. Heatmap
 library(gplots)
 my_palette <- colorRampPalette(c("light blue", "black", "dark red"))(n = 1000)
+selected_dep <- c('No información', 'Total',
+                  'Carazo', 'RACCN', 'RACCS', 
+                  'Río San Juan ', 'Nueva Segovia', 
+                  'Boaco', 'Madriz', 'Rivas',
+                  'Jinotega', 'Chontales', 'Granada')
 
 heatmap_dat <- dep_data %>%
-  filter(Status == 'fallecidos')
+  filter(Status == 'fallecidos',
+         (!(dep %in% selected_dep)))
 
 ## subset: after Feb 22nd
 col_idx <- which(colnames(heatmap_dat) == '1_5_2020')
@@ -112,9 +112,7 @@ heatmap_dat <- heatmap_dat %>%
 x <- as.matrix(heatmap_dat) 
 x <- x[order(x[,ncol(x)],decreasing=T),]
 
-dev.off()
 png(paste(figures, "heatmap.png"), width = 16, height = 12, units = 'in', res = 800)
-
 heatmap <- heatmap.2(x, trace = 'none', dendrogram = 'none',
                      density.info = 'none', keysize = 0.8,
                      key.title = NA, cexCol = 1, cexRow = 1,
@@ -124,14 +122,6 @@ heatmap <- heatmap.2(x, trace = 'none', dendrogram = 'none',
                      xlab = 'Fuente: Observatorio Ciudadano COVID-19 Nicaragua')
 
 dev.off()
-
-theme(plot.title = element_text(hjust = 0.5, vjust = 0.5),
-      plot.subtitle = element_text(hjust = 3),
-      plot.caption = element_text(hjust = 3),
-      axis.text.x = element_text(angle = 90, hjust = 0.5, vjust = 0.5, size = 1), 
-      panel.spacing.y = unit(2, "mm"),
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank())
 
 # b. Static & Dynamic Longitudinal Spaghetti Chart
 
@@ -155,7 +145,7 @@ current_dat <- do.call(rbind, current_dat_list)
 # b.1. Dynamic Longitudinal Spaghetti Chart
 #### Plotly with ggplot facet_wrap
 
-selected_dep <- c('Chinandega', 'Managua', 'Masaya', 'Matagalpa')
+selected_dep <- c('Chinandega', 'Managua', 'Masaya', 'Matagalpa', 'Jinotega','Granada')
 
 x <- lapply(selected_dep, 
                 function(i) {
