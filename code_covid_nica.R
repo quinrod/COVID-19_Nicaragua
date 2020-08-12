@@ -147,8 +147,7 @@ current_dat <- do.call(rbind, current_dat_list)
 docs<- '/Users/quinrod/projects/GitHub/COVID-19_Nicaragua/docs/'
 selected_dep <- c('Chinandega', 'Managua', 'Masaya', 'Matagalpa', 'Jinotega','Granada',
                   'Total', 'Carazo', 'RACCN', 'RACCS','Río San Juan ', 'Nueva Segovia', 
-                  'Boaco', 'Madriz', 'Rivas','Chontales')
-
+                  'Boaco', 'Madriz', 'Rivas','Chontales', 'Estelí', 'León')
 
 x <- lapply(selected_dep, 
                 function(i) {
