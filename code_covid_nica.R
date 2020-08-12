@@ -133,18 +133,10 @@ theme(plot.title = element_text(hjust = 0.5, vjust = 0.5),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank())
 
-
-
-
-
-
-
-
 # b. Static & Dynamic Longitudinal Spaghetti Chart
 
 #### Select the countries for plotting, and convert wide format to long
 current_dat <- dep_data %>%
-  filter(!(dep %in% selected_dep)) %>%
   reshape2::melt(.) %>%
   set_colnames(c('State', 'Status', 'Date', 'Total')) #by reshaping it adds to total
 
@@ -161,35 +153,45 @@ current_dat_list <- lapply(unique(current_dat$State), find_case1_onwards)
 current_dat <- do.call(rbind, current_dat_list)
 
 # b.1. Dynamic Longitudinal Spaghetti Chart
-
 #### Plotly with ggplot facet_wrap
-state_plot = ggplot(dat = current_dat,
-                    aes_string(x = 'Date', y = 'Total', color = 'Status', group = 'Status', linetype = 'Status')) +
-  geom_line(lwd = 1.2) +
-  
-  facet_wrap(~ State, scales = "free") +
-  
-  labs(caption = "Fuente: Observatorio Ciudadano COVID-19 Nicaragua",
-       title = 'Trayectoria COVID-19 \n') +
-  xlab('Fuente: Observatorio Ciudadano COVID-19 Nicaragua') + ylab('Total Casos') +
-  theme_bw() +
-  theme(plot.title = element_text(hjust = 0.5, vjust = 0.5),
-        plot.subtitle = element_text(hjust = 3),
-        plot.caption = element_text(hjust = 3),
-        axis.text.x = element_text(angle = 90, hjust = 0.5, vjust = 0.5, size = 1), 
-        panel.spacing.y = unit(2, "mm"),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())
 
-build <- plotly_build(state_plot)
-build$layout$width = 1000
-build$layout$height = 900
-build
+selected_dep <- c('Chinandega', 'Managua', 'Masaya', 'Matagalpa')
+
+x <- lapply(selected_dep, 
+                function(i) {
+                    d <- current_dat %>% filter(State == i) 
+  
+                    state_plot <- d %>%
+                        ggplot(aes_string(x = 'Date', y = 'Total', color = 'Status', group = 'Status', linetype = 'Status')) +
+                         geom_line(lwd = 1.2) +
+                          labs(title = paste('Trayectoria COVID-19 en', i)) +
+                           xlab('Fuente: Observatorio Ciudadano COVID-19 Nicaragua') + 
+                           ylab('Total Casos') +
+                      
+                           theme_bw() +
+                           theme(plot.title = element_text(hjust = 0.5, vjust = 0.5),
+                                 plot.subtitle = element_text(hjust = 3),
+                                 plot.caption = element_text(hjust = 3),
+                                 axis.text.x = element_text(angle = 90, hjust = 0.5, vjust = 0.5, size = 5), 
+                                 panel.spacing.y = unit(5, "mm"),
+                                 panel.grid.major = element_blank(),
+                                 panel.grid.minor = element_blank())
+  
+                          build <- plotly_build(state_plot) 
+                          build$layout$width = 3200
+                          build$layout$height = 900
+                          build 
+                          setwd(figures)
+                          htmlwidgets::saveWidget(as_widget(build), paste(i,"trayectoria.html"))
+                          })
+
+x
+setwd("/Users/quinrod")
+
+#facet_wrap(~ State, scales = "free") +
 
 # b.2. Static
 filter <- c('confirmados')
-
-
 
 static <- current_dat %>% 
   mutate(Date = as.character(as.Date(Date,"%d_%m_%Y")),
