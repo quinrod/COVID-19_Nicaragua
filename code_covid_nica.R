@@ -145,8 +145,10 @@ current_dat <- do.call(rbind, current_dat_list)
 # b.1. Dynamic Longitudinal Spaghetti Chart
 #### Plotly with ggplot facet_wrap
 
-selected_dep <- c('Chinandega', 'Managua', 'Masaya', 'Matagalpa', 'Jinotega','Granada')
-
+selected_dep <- c('Chinandega', 'Managua', 'Masaya', 'Matagalpa', 'Jinotega','Granada',
+                  'Total', 'Carazo', 'RACCN', 'RACCS','Río San Juan ', 'Nueva Segovia', 
+                  'Boaco', 'Madriz', 'Rivas','Chontales')
+docs<- '/Users/quinrod/projects/GitHub/COVID-19_Nicaragua/docs/'
 x <- lapply(selected_dep, 
                 function(i) {
                     d <- current_dat %>% filter(State == i) 
@@ -171,7 +173,7 @@ x <- lapply(selected_dep,
                           build$layout$width = 3200
                           build$layout$height = 900
                           build 
-                          setwd(figures)
+                          setwd(docs)
                           htmlwidgets::saveWidget(as_widget(build), paste(i,"trayectoria.html"))
                           })
 
