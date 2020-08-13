@@ -14,7 +14,7 @@
 ![Heatmap](https://github.com/quinrod/COVID-19_Nicaragua/blob/master/figures/%20heatmap.png)
 
 ### 4. Static Longitudinal Chart: Trend of accumulated confirmed cases - all Nicaragua
-![All Nicaragua](https://github.com/quinrod/COVID-19_Nicaragua/blob/master/figures/todos%20en%20una.png)
+![All Nicaragua](https://github.com/quinrod/COVID-19_Nicaragua/blob/master/figures/%20todos%20en%20una.png)
 
 ### 5. Static Longitudinal Chart: Trend of accumulated confirmed cases - by states
 ![By States](https://github.com/quinrod/COVID-19_Nicaragua/blob/master/figures/por%20municipio.png)
