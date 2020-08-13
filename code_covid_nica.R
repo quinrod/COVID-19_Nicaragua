@@ -195,16 +195,16 @@ static <- current_dat %>%
          Total = sort(Total),
          Days = 1:n())
 
-# graph curves (todas)
-
-dev.off()
-
 #all in one
+dev.off()
+excluded_states <- c('Managua','Total', 'No información')
+png(paste(figures,"todos en una.png"))
 static %>% 
+  filter(!(State %in% excluded_states)) %>%
   ggplot(aes(as.numeric(Days), as.numeric(Total), col=State)) +
   geom_point(show.legend=TRUE) +
   geom_line() +
-  scale_y_continuous(limit=c(0,3200)) +
+  scale_y_continuous(limit=c(0,1200)) +
   ylab("no. de casos confirmados") +
   xlab("no. de días desde 1er caso") +
   labs(title = "Casos acumulados por municipios", 
@@ -213,7 +213,10 @@ static %>%
         plot.title = element_text(hjust = 0.5),
         plot.caption = element_text(hjust = 1, vjust = 0.9, size = 8)) 
 
+
+print(myplot)
 dev.off()
+
 
 #por municipio
 static %>% 
