@@ -198,8 +198,8 @@ static <- current_dat %>%
 #all in one
 dev.off()
 excluded_states <- c('Managua','Total', 'No información')
-png(paste(figures,"todos en una.png"))
-static %>% 
+
+static <- static %>% 
   filter(!(State %in% excluded_states)) %>%
   ggplot(aes(as.numeric(Days), as.numeric(Total), col=State)) +
   geom_point(show.legend=TRUE) +
@@ -213,10 +213,13 @@ static %>%
         plot.title = element_text(hjust = 0.5),
         plot.caption = element_text(hjust = 1, vjust = 0.9, size = 8)) 
 
+ggsave(paste(figures,'todos en una.png'), 
+       device = "png", 
+       width = 16,
+       height = 12,
+       units = 'in')
 
-print(myplot)
 dev.off()
-
 
 #por municipio
 static %>% 
