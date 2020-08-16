@@ -225,8 +225,7 @@ excluded_states <- c('No información')
 municipio <- static %>% 
   filter(!(State %in% excluded_states)) %>%
   ggplot(aes(as.numeric(Days), as.numeric(Total), col=State)) +
-  geom_point(show.legend=TRUE) +
-  geom_line() +
+  geom_line(show.legend=FALSE) +
   ylab("no. de casos confirmados") +
   xlab("no. de días desde 1er caso") +
   facet_wrap(.~State, scales = "free") +
@@ -241,6 +240,9 @@ ggsave(paste(figures,'por municipio.png'),
        width = 16,
        height = 12,
        units = 'in')
+
+# municipio + transition_reveal(Days) 
+
 
 # b.3. New cases
 filter <- c('confirmados')
@@ -269,7 +271,20 @@ ggsave(paste(figures,'casos nuevos.png'),
        height = 12,
        units = 'in')
 
+
 # c. Animated Bar Charts in R
+
+# c.1. Accumulated by municipio
+
+# municipio + transition_reveal(Days) 
+
+
+# c.2. New cases
+new + transition_reveal(Days) 
+
+nuevo
+
+# c.3. Racing bars
 
 ######==== 3) Animated racing bar chart
 library(gganimate)
