@@ -17,7 +17,7 @@
 ![All Nicaragua](https://github.com/quinrod/COVID-19_Nicaragua/blob/master/figures/%20todos%20en%20una.png)
 
 ### 5. Static Longitudinal Chart: Trend of accumulated confirmed cases - by states
-![By States](https://github.com/quinrod/COVID-19_Nicaragua/blob/master/figures/por%20municipio.png)
+![By States](https://github.com/quinrod/COVID-19_Nicaragua/blob/master/figures/%20por%20municipio.png)
 
 ### 6. Dynamic Longitudinal Chart: accumulated confirmed and deceased cases - selected states
 ![Dinamico](https://github.com/quinrod/COVID-19_Nicaragua/blob/master/figures/dinamo.png)
