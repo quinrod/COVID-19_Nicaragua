@@ -199,7 +199,7 @@ static <- current_dat %>%
 dev.off()
 excluded_states <- c('Managua','Total', 'No información')
 
-static <- static %>% 
+all <- static %>% 
   filter(!(State %in% excluded_states)) %>%
   ggplot(aes(as.numeric(Days), as.numeric(Total), col=State)) +
   geom_point(show.legend=TRUE) +
@@ -219,22 +219,55 @@ ggsave(paste(figures,'todos en una.png'),
        height = 12,
        units = 'in')
 
-dev.off()
-
 #por municipio
-static %>% 
+excluded_states <- c('No información')
+
+municipio <- static %>% 
+  filter(!(State %in% excluded_states)) %>%
   ggplot(aes(as.numeric(Days), as.numeric(Total), col=State)) +
   geom_point(show.legend=TRUE) +
   geom_line() +
-  scale_y_continuous(limit=c(0,800)) +
   ylab("no. de casos confirmados") +
   xlab("no. de días desde 1er caso") +
-  facet_wrap(.~State) +
-  labs(title = "Casos acumulados por municipios", 
+  facet_wrap(.~State, scales = "free") +
+  labs(title = "Casos acumulados por municipio", 
        caption = "Fuente: Observatorio Ciudadano COVID-19 Nicaragua") +
   theme(legend.title = element_blank(), 
         plot.title = element_text(hjust = 0.5),
         plot.caption = element_text(hjust = 1, vjust = 0.9, size = 8)) 
+
+ggsave(paste(figures,'por municipio.png'), 
+       device = "png", 
+       width = 16,
+       height = 12,
+       units = 'in')
+
+# b.3. New cases
+filter <- c('confirmados')
+excluded_states <- c('No información')
+
+new <- static %>% 
+  filter(Status %in% filter, !(State %in% excluded_states)) %>%
+  group_by(State) %>%
+  mutate(nuevos = Total - lag(Total),
+         nuevos = ifelse(is.na(nuevos), 1, nuevos),
+         mov = rollmean(nuevos, k = 7, fill = NA)) %>%
+  ggplot(aes(as.numeric(Days),as.numeric(mov), col = State)) +
+  geom_line(show.legend=FALSE) +
+  ylab("no. de casos nuevos") +
+  xlab("no. de días desde 1er caso") +
+  facet_wrap(.~State, scales = "free") +
+  labs(title = "Media móvil (7 días) de casos nuevos por municipio", 
+       caption = "Fuente: Observatorio Ciudadano COVID-19 Nicaragua") +
+  theme(legend.title = element_blank(), 
+        plot.title = element_text(hjust = 0.5),
+        plot.caption = element_text(hjust = 1, vjust = 0.9, size = 8)) 
+
+ggsave(paste(figures,'casos nuevos.png'), 
+       device = "png", 
+       width = 16,
+       height = 12,
+       units = 'in')
 
 # c. Animated Bar Charts in R
 
@@ -390,17 +423,6 @@ cases <- lapply(status,
             })
               
 setwd("/Users/quinrod")
-
-# d. New cases 
-
-
-
-
-
-
-
-
-
 
 
 
