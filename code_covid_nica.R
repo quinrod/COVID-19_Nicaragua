@@ -236,7 +236,6 @@ static %>%
         plot.title = element_text(hjust = 0.5),
         plot.caption = element_text(hjust = 1, vjust = 0.9, size = 8)) 
 
-
 # c. Animated Bar Charts in R
 
 ######==== 3) Animated racing bar chart
@@ -391,6 +390,21 @@ cases <- lapply(status,
             })
               
 setwd("/Users/quinrod")
+
+# d. New cases 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
