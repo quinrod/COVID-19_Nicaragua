@@ -125,7 +125,7 @@ dev.off()
 
 # b. Static & Dynamic Longitudinal Spaghetti Chart
 
-#### Select the countries for plotting, and convert wide format to long
+#### Select the departamentos for plotting, and convert wide format to long
 current_dat <- dep_data %>%
   reshape2::melt(.) %>%
   set_colnames(c('State', 'Status', 'Date', 'Total')) #by reshaping it adds to total
@@ -154,17 +154,19 @@ x <- lapply(selected_dep,
                     d <- current_dat %>% filter(State == i) 
   
                     state_plot <- d %>%
+                        mutate(Date = as.Date(Date,"%d_%m_%Y")) %>%
                         ggplot(aes_string(x = 'Date', y = 'Total', color = 'Status', group = 'Status', linetype = 'Status')) +
                          geom_line(lwd = 1.2) +
                           labs(title = paste('Trayectoria COVID-19 en', i)) +
                            xlab('Fuente: Observatorio Ciudadano COVID-19 Nicaragua') + 
                            ylab('Total Casos') +
+                           scale_x_date(labels = date_format("%b %Y")) +
                       
                            theme_bw() +
                            theme(plot.title = element_text(hjust = 0.5, vjust = 0.5),
                                  plot.subtitle = element_text(hjust = 3),
                                  plot.caption = element_text(hjust = 3),
-                                 axis.text.x = element_text(angle = 90, hjust = 0.5, vjust = 0.5, size = 5), 
+                                 axis.text.x = element_text(hjust = 0.5, vjust = 0.5, size = 10), #angle = 90, 
                                  panel.spacing.y = unit(5, "mm"),
                                  panel.grid.major = element_blank(),
                                  panel.grid.minor = element_blank())
@@ -187,8 +189,8 @@ filter <- c('confirmados')
 
 static <- current_dat %>% 
   mutate(Date = as.character(as.Date(Date,"%d_%m_%Y")),
-         State = as.character(State),
-         Total = as.numeric(Total)) %>%
+         Total = as.numeric(Total),
+         State = ifelse(State == 'Total','Nicaragua', as.character(State))) %>%
   filter(Status == filter) %>%
   group_by(State, Status) %>%
   mutate(Date = sort(Date), 
@@ -197,20 +199,21 @@ static <- current_dat %>%
 
 #all in one
 dev.off()
-excluded_states <- c('Managua','Total', 'No información')
+excluded_states <- c('No información', 'Nicaragua', 'Managua')
 
 all <- static %>% 
   filter(!(State %in% excluded_states)) %>%
   ggplot(aes(as.numeric(Days), as.numeric(Total), col=State)) +
   geom_point(show.legend=TRUE) +
   geom_line() +
-  scale_y_continuous(limit=c(0,1200)) +
+  #scale_y_continuous(trans = "log2") +
   ylab("no. de casos confirmados") +
   xlab("no. de días desde 1er caso") +
-  labs(title = "Casos acumulados por municipios", 
+  labs(title = "Casos acumulados por departamentos", #(logarítmica) 
        caption = "Fuente: Observatorio Ciudadano COVID-19 Nicaragua") +
   theme(legend.title = element_blank(), 
-        plot.title = element_text(hjust = 0.5),
+        legend.text = element_text(size = 12),
+        plot.title = element_text(hjust = 0.5, size = 25),
         plot.caption = element_text(hjust = 1, vjust = 0.9, size = 8)) 
 
 ggsave(paste(figures,'todos en una.png'), 
@@ -250,9 +253,10 @@ excluded_states <- c('No información')
 
 new <- static %>% 
   filter(Status %in% filter, !(State %in% excluded_states)) %>%
+  mutate(State = as.factor(State),
+         fecha = as.Date(Date,"%Y-%m-%d")) %>%
   group_by(State) %>%
-  mutate(nuevos = Total - lag(Total),
-         nuevos = ifelse(is.na(nuevos), 1, nuevos),
+  mutate(nuevos = ifelse(Days == 1,Total,Total - lag(Total)), 
          mov = rollmean(nuevos, k = 7, fill = NA)) %>%
   ggplot(aes(as.numeric(Days),as.numeric(mov), col = State)) +
   geom_line(show.legend=FALSE) +
@@ -275,13 +279,10 @@ ggsave(paste(figures,'casos nuevos.png'),
 # c. Animated Bar Charts in R
 
 # c.1. Accumulated by municipio
-
 # municipio + transition_reveal(Days) 
-
 
 # c.2. New cases
 new + transition_reveal(Days) 
-
 nuevo
 
 # c.3. Racing bars
