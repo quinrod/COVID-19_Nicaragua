@@ -185,13 +185,10 @@ setwd("/Users/quinrod")
 #facet_wrap(~ State, scales = "free") +
 
 # b.2. Static
-filter <- c('confirmados')
-
 static <- current_dat %>% 
   mutate(Date = as.character(as.Date(Date,"%d_%m_%Y")),
          Total = as.numeric(Total),
          State = ifelse(State == 'Total','Nicaragua', as.character(State))) %>%
-  filter(Status == filter) %>%
   group_by(State, Status) %>%
   mutate(Date = sort(Date), 
          Total = sort(Total),
@@ -199,10 +196,11 @@ static <- current_dat %>%
 
 #all in one
 dev.off()
+filter <- c('confirmados')
 excluded_states <- c('No información', 'Nicaragua', 'Managua')
 
 all <- static %>% 
-  filter(!(State %in% excluded_states)) %>%
+  filter(Status == filter, !(State %in% excluded_states)) %>%
   ggplot(aes(as.numeric(Days), as.numeric(Total), col=State)) +
   geom_point(show.legend=TRUE) +
   geom_line() +
@@ -224,9 +222,10 @@ ggsave(paste(figures,'todos en una.png'),
 
 #por municipio
 excluded_states <- c('No información')
+filter <- c('confirmados')
 
 municipio <- static %>% 
-  filter(!(State %in% excluded_states)) %>%
+  filter(Status == filter,!(State %in% excluded_states)) %>%
   ggplot(aes(as.numeric(Days), as.numeric(Total), col=State)) +
   geom_line(show.legend=FALSE) +
   ylab("no. de casos confirmados") +
@@ -248,13 +247,13 @@ ggsave(paste(figures,'por municipio.png'),
 
 
 # b.3. New cases
-filter <- c('confirmados')
+filter <- c('fallecidos')
 excluded_states <- c('No información')
 
 new <- static %>% 
   filter(Status %in% filter, !(State %in% excluded_states)) %>%
   mutate(State = as.factor(State),
-         fecha = as.Date(Date,"%Y-%m-%d")) %>%
+         Fecha = as.Date(Date,"%Y-%m-%d")) %>%
   group_by(State) %>%
   mutate(nuevos = ifelse(Days == 1,Total,Total - lag(Total)), 
          mov = rollmean(nuevos, k = 7, fill = NA)) %>%
@@ -349,10 +348,11 @@ cases <- lapply(status,
                 filter(rank <= 10) 
               
               #####======= static and animated plots
-              total_text_y = 0.70*(max(casos_formatted$Total))
-              panel_size_y = max(casos_formatted$Total) * 1  
-              vline_original_y = seq(floor(max(casos_formatted$Total)/8), 
-                                     max(casos_formatted$Total), by = floor(max(casos_formatted$Total)/8))
+              total_text_y = (max(casos_formatted$Total)) * 1.2
+              panel_size_y = max(casos_formatted$Total) * 1.5 
+              vline_original_y = seq(floor(max(casos_formatted$Total)/10), 
+                                     max(casos_formatted$Total), 
+                                     by = floor(max(casos_formatted$Total)/10))
               
               country_font_size = 10
               bar_end_num_size = 10
@@ -361,20 +361,21 @@ cases <- lapply(status,
                                    aes(rank, group = casos_formatted$State,
                                        fill = as.factor(casos_formatted$State), color = as.factor(casos_formatted$State))) +
                 geom_tile(aes(y = Total/2, height = Total, width = 0.9), 
-                          alpha = 0.9, color = NA) +
+                          alpha = 1, color = NA) +
                 geom_text(aes(y = 0, label = casos_formatted$State), vjust = 1.5, hjust = 0, 
                           size = country_font_size, fontface = "bold", color = 'white') +
-                geom_text(aes(y = Total, label = value_lbl, vjust = 0.001, hjust = 0), fontface = 'bold', size = bar_end_num_size) +
+                geom_text(aes(y = Total, label = value_lbl, vjust = 0.1, hjust = 0), fontface = 'bold', size = bar_end_num_size) +
                 
-                geom_text(aes(x = 8, y = total_text_y,
-                              label = sprintf('%s\n Total Nacional =%s', Date, format(Total_all, big.mark=",", scientific=FALSE))),
-                          size = 13, color = 'grey') +
+                geom_text(aes(x = 5, y = total_text_y,
+                              label = sprintf('Total Nicaragua = %s', format(Total_all, big.mark=",", scientific=FALSE))),
+                          size = 13, color = 'grey', hjust = 3.8) +
                 
-                geom_hline(yintercept = vline_original_y, size = .08, color = "grey", linetype = 'dotted') +
+                geom_hline(yintercept = vline_original_y, size = 0.1, color = "grey", linetype = 'dotted') +
                 scale_y_continuous(labels = scales::comma) +
                 scale_x_reverse() +
                 coord_flip(clip = "off", expand = FALSE) +
                 guides(color = FALSE, fill = FALSE) +
+                
                 theme(axis.line = element_blank(),
                       axis.text.y = element_blank(),
                       axis.ticks = element_blank(),
@@ -394,8 +395,6 @@ cases <- lapply(status,
                       plot.subtitle = element_text(size=18, face="italic", color="grey"),   
                       plot.caption = element_text(size=15, hjust=0.5, face="italic", color="grey"))
               
-              #plot.margin = margin(2, 5, 2, 8, "cm"))
-              
               #### Specify the transition length and ease_aes to give it a smoother transition 
               current_state_len = 0 
               current_transition_len = 12  
@@ -413,12 +412,12 @@ cases <- lapply(status,
               library(gifski)
               
               output_type = 'GIF'
-              animate_speed = 16 
+              animate_speed = 10 
               setwd(figures)
               if(output_type == 'GIF'){  ### Save as GIF
                 save_name = paste(i,".gif")
-                animate(anim, 500, fps = animate_speed, 
-                        width = 1500, height = 1000, end_pause = 10, start_pause = 10, 
+                animate(anim, 250, fps = animate_speed, 
+                        width = 2500, height = 1500, end_pause = 10, start_pause = 10, 
                         renderer = gifski_renderer(save_name))  
                 
                 print(sprintf('==== GIF file %s saved ====', save_name))
@@ -426,8 +425,8 @@ cases <- lapply(status,
               } else {              ### Save as MP4
                 save_name = paste(i,".mp4")
                 
-                animate(anim, 500, fps = animate_speed, 
-                        width = 1500, height = 1000, end_pause = 30, start_pause = 20,
+                animate(anim, 250, fps = animate_speed, 
+                        width = 2500, height = 1500, end_pause = 10, start_pause = 10,
                         renderer = av_renderer(), 
                         rewind = FALSE) -> save_as_mp4
                 
@@ -439,10 +438,5 @@ cases <- lapply(status,
             })
               
 setwd("/Users/quinrod")
-
-
-
-
-
 
 
