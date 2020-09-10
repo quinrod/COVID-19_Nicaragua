@@ -354,8 +354,8 @@ cases <- lapply(status,
                                      max(casos_formatted$Total), 
                                      by = floor(max(casos_formatted$Total)/10))
               
-              country_font_size = 15
-              bar_end_num_size = 15
+              country_font_size = 14
+              bar_end_num_size = 14
               
               staticplot <- ggplot(casos_formatted,
                                    aes(rank, group = casos_formatted$State,
